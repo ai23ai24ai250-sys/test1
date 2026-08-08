@@ -1,0 +1,1435 @@
+/* =============================================================================
+   Aladdin BMS — Premium Design System (V3.24)
+   =============================================================================
+   Complete CSS-first redesign. No markup/JS logic changed — every rule targets
+   existing IDs, classes and structure. Theming is driven exclusively by the
+   `data-theme` attribute on <html> (set by GeneralSettings.setTheme).
+
+   Structure:
+     1.  Design tokens (per-theme CSS variables)
+     2.  Tailwind utility remap (neutral ramp -> theme tokens)
+     3.  Brand palette remap
+     4.  Scrollbars
+     5.  Base + ambient backgrounds
+     6.  Animations
+     7.  Floating glass header + navigation
+     8.  Cards / panels / surfaces
+     9.  Login screen
+     10. Form controls
+     11. Buttons + focus states
+     12. Tables
+     13. Modals
+     14. Toasts
+     15. Dropdowns / popovers
+     16. Badges / chips / status
+     17. Footer
+     18. Utilities & legacy helpers (functional, kept)
+     19. Responsive
+   ============================================================================= */
+
+
+/* =============================================================================
+   1. THEME TOKENS
+   ============================================================================= */
+
+/* ---- Dark (default) — deep navy, premium glass ---- */
+:root {
+  /* Legacy inline-panel vars (consumed by Google Sheets / cloud panels) */
+  --ui-bg: #0f172a;
+  --ui-bg-soft: #111c30;
+  --ui-border: #2b3a52;
+  --ui-text: #e2e8f0;
+  --ui-dim: #8ea3bd;
+
+  /* Neutral surface ramp (consumed by the slate remap below) */
+  --t-950: #0b1220;
+  --t-900: #0f172a;
+  --t-850: #152036;
+  --t-800: #1e293b;
+  --t-700: #2b3a52;
+  --t-600: #334155;
+  --t-500: #475569;
+
+  /* Neutral text ramp */
+  --t-text-50: #f8fafc;
+  --t-text-100: #f1f5f9;
+  --t-text-200: #e2e8f0;
+  --t-text-300: #cbd5e1;
+  --t-text-400: #94a3b8;
+  --t-text-500: #64748b;
+  --t-text-600: #475569;
+
+  /* Brand palette (runtime re-derivable via GeneralSettings.applyPalette) */
+  --brand-50: #f0f7ff;
+  --brand-100: #e0effe;
+  --brand-300: #7dd3fc;
+  --brand-400: #38bdf8;
+  --brand-500: #0284c7;
+  --brand-600: #0369a1;
+  --brand-700: #075985;
+  --brand-800: #0c4a6e;
+  --brand-900: #0f172a;
+
+  /* Radius / shadow / glass */
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2rem;
+
+  --shadow-soft: 0 8px 30px rgba(2, 6, 23, 0.28);
+  --shadow-medium: 0 18px 50px rgba(2, 6, 23, 0.36);
+  --shadow-strong: 0 28px 80px rgba(2, 6, 23, 0.45);
+
+  --glass-top: rgba(15, 23, 42, 0.92);
+  --glass-bottom: rgba(15, 23, 42, 0.74);
+  --card-top: rgba(17, 24, 39, 0.90);
+  --card-bottom: rgba(15, 23, 42, 0.72);
+  --surface-glass: rgba(15, 23, 42, 0.68);
+  --surface-glass-strong: rgba(15, 23, 42, 0.86);
+  --inset-top: rgba(255, 255, 255, 0.04);
+
+  --surface-glow: color-mix(in srgb, var(--brand-500) 14%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 26%, transparent);
+  --focus-ring: 0 0 0 4px color-mix(in srgb, var(--brand-500) 32%, transparent);
+
+  /* Scrollbar */
+  --t-scroll-track: #0b1220;
+  --t-scroll-thumb: #2b3a52;
+  --t-scroll-thumb-hover: #3d4f6d;
+
+  /* Full-page ambient backdrop */
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 28%),
+    radial-gradient(circle at 12% 10%, rgba(245, 158, 11, 0.10), transparent 24%),
+    linear-gradient(180deg, #050b18 0%, #0f172a 48%, #050b18 100%);
+}
+
+/* ---- Light — Apple-clean airy ---- */
+[data-theme="light"] {
+  --ui-bg: #f8fafc;
+  --ui-bg-soft: #eef2f7;
+  --ui-border: #cbd5e1;
+  --ui-text: #0f172a;
+  --ui-dim: #475569;
+
+  --t-950: #e2e8f0;
+  --t-900: #f8fafc;
+  --t-850: #eef2f7;
+  --t-800: #e2e8f0;
+  --t-700: #cbd5e1;
+  --t-600: #94a3b8;
+  --t-500: #64748b;
+
+  --t-text-50: #0f172a;
+  --t-text-100: #0f172a;
+  --t-text-200: #1e293b;
+  --t-text-300: #334155;
+  --t-text-400: #475569;
+  --t-text-500: #64748b;
+  --t-text-600: #94a3b8;
+
+  --brand-300: #0ea5e9;
+  --brand-400: #0284c7;
+  --brand-900: #e0f2fe;
+
+  --shadow-soft: 0 10px 32px rgba(15, 23, 42, 0.09);
+  --shadow-medium: 0 18px 50px rgba(15, 23, 42, 0.13);
+  --shadow-strong: 0 28px 80px rgba(15, 23, 42, 0.18);
+
+  --glass-top: rgba(255, 255, 255, 0.94);
+  --glass-bottom: rgba(248, 250, 252, 0.84);
+  --card-top: rgba(255, 255, 255, 0.96);
+  --card-bottom: rgba(248, 250, 252, 0.88);
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --surface-glass-strong: rgba(255, 255, 255, 0.92);
+  --inset-top: rgba(255, 255, 255, 0.6);
+
+  --t-scroll-track: #e2e8f0;
+  --t-scroll-thumb: #94a3b8;
+  --t-scroll-thumb-hover: #64748b;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(245, 158, 11, 0.07), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 52%, #eef2f7 100%);
+}
+
+/* ---- Ocean — deep teal/cyan ---- */
+[data-theme="ocean"] {
+  --ui-bg: #042026;
+  --ui-bg-soft: #0a3b46;
+  --ui-border: #1a5563;
+  --ui-text: #e0f2f5;
+  --ui-dim: #7fb6c4;
+
+  --t-950: #042026;
+  --t-900: #06313a;
+  --t-850: #0a3b46;
+  --t-800: #114753;
+  --t-700: #1a5563;
+  --t-600: #226476;
+  --t-500: #3a7f8f;
+
+  --brand-50: #ecfeff;
+  --brand-100: #cffafe;
+  --brand-300: #67e8f9;
+  --brand-400: #22d3ee;
+  --brand-500: #06b6d4;
+  --brand-600: #0891b2;
+  --brand-700: #0e7490;
+  --brand-800: #155e75;
+  --brand-900: #06313a;
+
+  --glass-top: rgba(6, 49, 58, 0.92);
+  --glass-bottom: rgba(6, 49, 58, 0.76);
+  --card-top: rgba(7, 52, 61, 0.90);
+  --card-bottom: rgba(6, 49, 58, 0.72);
+  --surface-glass: rgba(6, 49, 58, 0.68);
+  --surface-glass-strong: rgba(6, 49, 58, 0.86);
+  --surface-glow: color-mix(in srgb, var(--brand-500) 14%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 26%, transparent);
+
+  --t-scroll-track: #042026;
+  --t-scroll-thumb: #1a5563;
+  --t-scroll-thumb-hover: #226476;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.15), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.08), transparent 24%),
+    linear-gradient(180deg, #02171b 0%, #06313a 48%, #02171b 100%);
+}
+
+/* ---- Emerald — deep green ---- */
+[data-theme="emerald"] {
+  --ui-bg: #03241a;
+  --ui-bg-soft: #0a3d31;
+  --ui-border: #185a4a;
+  --ui-text: #e2f4ec;
+  --ui-dim: #7fbfa8;
+
+  --t-950: #03241a;
+  --t-900: #05352a;
+  --t-850: #0a3d31;
+  --t-800: #104a3c;
+  --t-700: #185a4a;
+  --t-600: #206a58;
+  --t-500: #3a846f;
+
+  --brand-50: #ecfdf5;
+  --brand-100: #d1fae5;
+  --brand-300: #6ee7b7;
+  --brand-400: #34d399;
+  --brand-500: #10b981;
+  --brand-600: #059669;
+  --brand-700: #047857;
+  --brand-800: #065f46;
+  --brand-900: #05352a;
+
+  --glass-top: rgba(5, 53, 42, 0.92);
+  --glass-bottom: rgba(5, 53, 42, 0.76);
+  --card-top: rgba(6, 64, 50, 0.90);
+  --card-bottom: rgba(5, 53, 42, 0.72);
+  --surface-glass: rgba(5, 53, 42, 0.68);
+  --surface-glass-strong: rgba(5, 53, 42, 0.86);
+  --surface-glow: color-mix(in srgb, var(--brand-500) 14%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 26%, transparent);
+
+  --t-scroll-track: #03241a;
+  --t-scroll-thumb: #185a4a;
+  --t-scroll-thumb-hover: #206a58;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(52, 211, 153, 0.14), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.08), transparent 24%),
+    linear-gradient(180deg, #011a12 0%, #05352a 48%, #011a12 100%);
+}
+
+/* ---- Royal — deep violet/indigo ---- */
+[data-theme="royal"] {
+  --ui-bg: #160926;
+  --ui-bg-soft: #24153f;
+  --ui-border: #3a2a60;
+  --ui-text: #efe9fb;
+  --ui-dim: #a895c9;
+
+  --t-950: #160926;
+  --t-900: #1d0f33;
+  --t-850: #24153f;
+  --t-800: #2d1d4d;
+  --t-700: #3a2a60;
+  --t-600: #473874;
+  --t-500: #5c4b8f;
+
+  --brand-50: #f5f3ff;
+  --brand-100: #ede9fe;
+  --brand-300: #c4b5fd;
+  --brand-400: #a78bfa;
+  --brand-500: #8b5cf6;
+  --brand-600: #7c3aed;
+  --brand-700: #6d28d9;
+  --brand-800: #5b21b6;
+  --brand-900: #1d0f33;
+
+  --glass-top: rgba(29, 15, 51, 0.92);
+  --glass-bottom: rgba(29, 15, 51, 0.76);
+  --card-top: rgba(35, 19, 60, 0.90);
+  --card-bottom: rgba(29, 15, 51, 0.72);
+  --surface-glass: rgba(29, 15, 51, 0.68);
+  --surface-glass-strong: rgba(29, 15, 51, 0.86);
+  --surface-glow: color-mix(in srgb, var(--brand-500) 16%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 28%, transparent);
+
+  --t-scroll-track: #160926;
+  --t-scroll-thumb: #3a2a60;
+  --t-scroll-thumb-hover: #473874;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(167, 139, 250, 0.16), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(139, 92, 246, 0.10), transparent 24%),
+    linear-gradient(180deg, #0d0518 0%, #1d0f33 48%, #0d0518 100%);
+}
+
+/* ---- Coffee — warm roasted ---- */
+[data-theme="coffee"] {
+  --ui-bg: #170f08;
+  --ui-bg-soft: #281b14;
+  --ui-border: #422e22;
+  --ui-text: #f3e9dc;
+  --ui-dim: #c0a285;
+
+  --t-950: #170f08;
+  --t-900: #1f1510;
+  --t-850: #281b14;
+  --t-800: #33231a;
+  --t-700: #422e22;
+  --t-600: #513a2b;
+  --t-500: #6b5238;
+
+  --brand-50: #fffbeb;
+  --brand-100: #fef3c7;
+  --brand-300: #fcd34d;
+  --brand-400: #fbbf24;
+  --brand-500: #d97706;
+  --brand-600: #b45309;
+  --brand-700: #92400e;
+  --brand-800: #78350f;
+  --brand-900: #1f1510;
+
+  --glass-top: rgba(31, 21, 16, 0.92);
+  --glass-bottom: rgba(31, 21, 16, 0.76);
+  --card-top: rgba(39, 26, 19, 0.90);
+  --card-bottom: rgba(31, 21, 16, 0.72);
+  --surface-glass: rgba(31, 21, 16, 0.68);
+  --surface-glass-strong: rgba(31, 21, 16, 0.86);
+  --surface-glow: color-mix(in srgb, var(--brand-500) 16%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 28%, transparent);
+
+  --t-scroll-track: #170f08;
+  --t-scroll-thumb: #422e22;
+  --t-scroll-thumb-hover: #513a2b;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(251, 191, 36, 0.13), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(217, 119, 6, 0.09), transparent 24%),
+    linear-gradient(180deg, #0d0905 0%, #1f1510 48%, #0d0905 100%);
+}
+
+/* ---- Luxury Gold — black & gold ---- */
+[data-theme="luxury-gold"] {
+  --ui-bg: #0a0905;
+  --ui-bg-soft: #1a1712;
+  --ui-border: #332e22;
+  --ui-text: #f2ead2;
+  --ui-dim: #c8b98d;
+
+  --t-950: #0a0905;
+  --t-900: #12100b;
+  --t-850: #1a1712;
+  --t-800: #232019;
+  --t-700: #332e22;
+  --t-600: #423c2c;
+  --t-500: #5a5239;
+
+  --brand-50: #fdf9ec;
+  --brand-100: #faf0d7;
+  --brand-300: #e9d283;
+  --brand-400: #ddba4a;
+  --brand-500: #d4af37;
+  --brand-600: #b8942a;
+  --brand-700: #96741f;
+  --brand-800: #7a5d17;
+  --brand-900: #12100b;
+
+  --glass-top: rgba(18, 16, 11, 0.94);
+  --glass-bottom: rgba(18, 16, 11, 0.78);
+  --card-top: rgba(26, 23, 18, 0.90);
+  --card-bottom: rgba(18, 16, 11, 0.72);
+  --surface-glass: rgba(18, 16, 11, 0.70);
+  --surface-glass-strong: rgba(18, 16, 11, 0.88);
+  --surface-glow: color-mix(in srgb, var(--brand-500) 16%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 30%, transparent);
+
+  --t-scroll-track: #0a0905;
+  --t-scroll-thumb: #332e22;
+  --t-scroll-thumb-hover: #423c2c;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(212, 175, 55, 0.14), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(212, 175, 55, 0.08), transparent 24%),
+    linear-gradient(180deg, #050403 0%, #12100b 50%, #050403 100%);
+}
+
+/* ---- Graphite — monochrome gray ---- */
+[data-theme="graphite"] {
+  --ui-bg: #0a0a0c;
+  --ui-bg-soft: #17171b;
+  --ui-border: #2c2c33;
+  --ui-text: #e7e7ea;
+  --ui-dim: #9b9ba4;
+
+  --t-950: #0a0a0c;
+  --t-900: #101013;
+  --t-850: #17171b;
+  --t-800: #1f1f24;
+  --t-700: #2c2c33;
+  --t-600: #393941;
+  --t-500: #4d4d56;
+
+  --brand-50: #f4f4f5;
+  --brand-100: #e4e4e7;
+  --brand-300: #c2c6cf;
+  --brand-400: #a7abb4;
+  --brand-500: #8b8f9a;
+  --brand-600: #6f737d;
+  --brand-700: #585c66;
+  --brand-800: #474a53;
+  --brand-900: #101013;
+
+  --glass-top: rgba(16, 16, 19, 0.92);
+  --glass-bottom: rgba(16, 16, 19, 0.76);
+  --card-top: rgba(23, 23, 27, 0.90);
+  --card-bottom: rgba(16, 16, 19, 0.72);
+  --surface-glass: rgba(16, 16, 19, 0.68);
+  --surface-glass-strong: rgba(16, 16, 19, 0.86);
+  --surface-glow: color-mix(in srgb, var(--brand-500) 18%, transparent);
+  --surface-glow-strong: color-mix(in srgb, var(--brand-500) 30%, transparent);
+
+  --t-scroll-track: #0a0a0c;
+  --t-scroll-thumb: #2c2c33;
+  --t-scroll-thumb-hover: #393941;
+
+  --ambient-bg:
+    radial-gradient(circle at top right, rgba(148, 163, 184, 0.12), transparent 30%),
+    radial-gradient(circle at 12% 10%, rgba(148, 163, 184, 0.06), transparent 24%),
+    linear-gradient(180deg, #070708 0%, #101013 48%, #070708 100%);
+}
+
+
+/* =============================================================================
+   2. TAILWIND UTILITY REMAP — neutral slate ramp -> theme tokens
+   Every `slate-*` utility the app renders now resolves through the theme
+   tokens above, so each theme re-skins every generated view automatically.
+   ============================================================================= */
+
+/* --- Backgrounds --- */
+.bg-slate-950 { background-color: var(--t-950) !important; }
+.bg-slate-950\/90 { background-color: color-mix(in srgb, var(--t-950) 90%, transparent) !important; }
+.bg-slate-950\/80 { background-color: color-mix(in srgb, var(--t-950) 80%, transparent) !important; }
+.bg-slate-950\/60 { background-color: color-mix(in srgb, var(--t-950) 60%, transparent) !important; }
+.bg-slate-950\/40 { background-color: color-mix(in srgb, var(--t-950) 40%, transparent) !important; }
+.bg-slate-950\/30 { background-color: color-mix(in srgb, var(--t-950) 30%, transparent) !important; }
+.bg-slate-900 { background-color: var(--t-900) !important; }
+.bg-slate-900\/95 { background-color: color-mix(in srgb, var(--t-900) 95%, transparent) !important; }
+.bg-slate-900\/90 { background-color: color-mix(in srgb, var(--t-900) 90%, transparent) !important; }
+.bg-slate-900\/80 { background-color: color-mix(in srgb, var(--t-900) 80%, transparent) !important; }
+.bg-slate-900\/70 { background-color: color-mix(in srgb, var(--t-900) 70%, transparent) !important; }
+.bg-slate-900\/60 { background-color: color-mix(in srgb, var(--t-900) 60%, transparent) !important; }
+.bg-slate-850 { background-color: var(--t-850) !important; }
+.bg-slate-800 { background-color: var(--t-800) !important; }
+.bg-slate-800\/95 { background-color: color-mix(in srgb, var(--t-800) 95%, transparent) !important; }
+.bg-slate-800\/90 { background-color: color-mix(in srgb, var(--t-800) 90%, transparent) !important; }
+.bg-slate-800\/80 { background-color: color-mix(in srgb, var(--t-800) 80%, transparent) !important; }
+.bg-slate-800\/70 { background-color: color-mix(in srgb, var(--t-800) 70%, transparent) !important; }
+.bg-slate-800\/60 { background-color: color-mix(in srgb, var(--t-800) 60%, transparent) !important; }
+.bg-slate-800\/50 { background-color: color-mix(in srgb, var(--t-800) 50%, transparent) !important; }
+.bg-slate-800\/40 { background-color: color-mix(in srgb, var(--t-800) 40%, transparent) !important; }
+.bg-slate-700 { background-color: var(--t-700) !important; }
+.bg-slate-700\/70 { background-color: color-mix(in srgb, var(--t-700) 70%, transparent) !important; }
+.bg-slate-700\/60 { background-color: color-mix(in srgb, var(--t-700) 60%, transparent) !important; }
+.bg-slate-700\/50 { background-color: color-mix(in srgb, var(--t-700) 50%, transparent) !important; }
+.bg-slate-700\/40 { background-color: color-mix(in srgb, var(--t-700) 40%, transparent) !important; }
+.bg-slate-600 { background-color: var(--t-600) !important; }
+.bg-slate-500\/20 { background-color: color-mix(in srgb, var(--t-500) 20%, transparent) !important; }
+.bg-slate-500\/10 { background-color: color-mix(in srgb, var(--t-500) 10%, transparent) !important; }
+
+.hover\:bg-slate-950:hover { background-color: var(--t-950) !important; }
+.hover\:bg-slate-900:hover { background-color: var(--t-900) !important; }
+.hover\:bg-slate-900\/80:hover { background-color: color-mix(in srgb, var(--t-900) 80%, transparent) !important; }
+.hover\:bg-slate-800:hover { background-color: var(--t-800) !important; }
+.hover\:bg-slate-800\/90:hover { background-color: color-mix(in srgb, var(--t-800) 90%, transparent) !important; }
+.hover\:bg-slate-800\/80:hover { background-color: color-mix(in srgb, var(--t-800) 80%, transparent) !important; }
+.hover\:bg-slate-700:hover { background-color: var(--t-700) !important; }
+.hover\:bg-slate-700\/90:hover { background-color: color-mix(in srgb, var(--t-700) 90%, transparent) !important; }
+.hover\:bg-slate-700\/80:hover { background-color: color-mix(in srgb, var(--t-700) 80%, transparent) !important; }
+.hover\:bg-slate-700\/60:hover { background-color: color-mix(in srgb, var(--t-700) 60%, transparent) !important; }
+.hover\:bg-slate-700\/50:hover { background-color: color-mix(in srgb, var(--t-700) 50%, transparent) !important; }
+.hover\:bg-slate-700\/40:hover { background-color: color-mix(in srgb, var(--t-700) 40%, transparent) !important; }
+.hover\:bg-slate-600:hover { background-color: var(--t-600) !important; }
+.hover\:bg-slate-500\/20:hover { background-color: color-mix(in srgb, var(--t-500) 20%, transparent) !important; }
+
+/* --- Gradient stops --- */
+.from-slate-950 { --tw-gradient-from: var(--t-950) !important; }
+.to-slate-950 { --tw-gradient-to: var(--t-950) !important; }
+.from-slate-900 { --tw-gradient-from: var(--t-900) !important; }
+.to-slate-900 { --tw-gradient-to: var(--t-900) !important; }
+.from-slate-850 { --tw-gradient-from: var(--t-850) !important; }
+.to-slate-850 { --tw-gradient-to: var(--t-850) !important; }
+.from-slate-800 { --tw-gradient-from: var(--t-800) !important; }
+.to-slate-800 { --tw-gradient-to: var(--t-800) !important; }
+.from-slate-800\/60 { --tw-gradient-from: color-mix(in srgb, var(--t-800) 60%, transparent) !important; }
+.to-slate-800\/60 { --tw-gradient-to: color-mix(in srgb, var(--t-800) 60%, transparent) !important; }
+
+/* --- Text --- */
+.text-white { color: var(--t-text-100) !important; }
+.text-slate-50 { color: var(--t-text-50) !important; }
+.text-slate-100 { color: var(--t-text-100) !important; }
+.text-slate-200 { color: var(--t-text-200) !important; }
+.text-slate-300 { color: var(--t-text-300) !important; }
+.text-slate-400 { color: var(--t-text-400) !important; }
+.text-slate-500 { color: var(--t-text-500) !important; }
+.text-slate-600 { color: var(--t-text-600) !important; }
+.hover\:text-white:hover { color: var(--t-text-100) !important; }
+.hover\:text-slate-300:hover { color: var(--t-text-300) !important; }
+.hover\:text-slate-400:hover { color: var(--t-text-400) !important; }
+
+/* --- Borders --- */
+.border-slate-950 { border-color: var(--t-950) !important; }
+.border-slate-900 { border-color: var(--t-900) !important; }
+.border-slate-900\/80 { border-color: color-mix(in srgb, var(--t-900) 80%, transparent) !important; }
+.border-slate-800 { border-color: var(--t-800) !important; }
+.border-slate-800\/90 { border-color: color-mix(in srgb, var(--t-800) 90%, transparent) !important; }
+.border-slate-800\/80 { border-color: color-mix(in srgb, var(--t-800) 80%, transparent) !important; }
+.border-slate-800\/70 { border-color: color-mix(in srgb, var(--t-800) 70%, transparent) !important; }
+.border-slate-800\/60 { border-color: color-mix(in srgb, var(--t-800) 60%, transparent) !important; }
+.border-slate-800\/50 { border-color: color-mix(in srgb, var(--t-800) 50%, transparent) !important; }
+.border-slate-800\/40 { border-color: color-mix(in srgb, var(--t-800) 40%, transparent) !important; }
+.border-slate-800\/30 { border-color: color-mix(in srgb, var(--t-800) 30%, transparent) !important; }
+.border-slate-700 { border-color: var(--t-700) !important; }
+.border-slate-700\/90 { border-color: color-mix(in srgb, var(--t-700) 90%, transparent) !important; }
+.border-slate-700\/80 { border-color: color-mix(in srgb, var(--t-700) 80%, transparent) !important; }
+.border-slate-700\/70 { border-color: color-mix(in srgb, var(--t-700) 70%, transparent) !important; }
+.border-slate-700\/60 { border-color: color-mix(in srgb, var(--t-700) 60%, transparent) !important; }
+.border-slate-700\/50 { border-color: color-mix(in srgb, var(--t-700) 50%, transparent) !important; }
+.border-slate-700\/40 { border-color: color-mix(in srgb, var(--t-700) 40%, transparent) !important; }
+.border-slate-700\/30 { border-color: color-mix(in srgb, var(--t-700) 30%, transparent) !important; }
+.border-slate-600\/60 { border-color: color-mix(in srgb, var(--t-600) 60%, transparent) !important; }
+.border-slate-600\/40 { border-color: color-mix(in srgb, var(--t-600) 40%, transparent) !important; }
+.border-slate-600\/30 { border-color: color-mix(in srgb, var(--t-600) 30%, transparent) !important; }
+.border-slate-500\/40 { border-color: color-mix(in srgb, var(--t-500) 40%, transparent) !important; }
+.border-slate-500\/30 { border-color: color-mix(in srgb, var(--t-500) 30%, transparent) !important; }
+.border-slate-500\/20 { border-color: color-mix(in srgb, var(--t-500) 20%, transparent) !important; }
+.hover\:border-slate-800:hover { border-color: var(--t-800) !important; }
+.hover\:border-slate-700:hover { border-color: var(--t-700) !important; }
+.hover\:border-slate-600:hover { border-color: var(--t-600) !important; }
+.border-t-slate-800 { border-color: var(--t-800) !important; }
+.border-b-slate-800 { border-color: var(--t-800) !important; }
+
+/* Solid colored buttons always keep WHITE text (any theme). Placed after the
+   text remap so it wins over the light-theme ink flip for these fills. */
+.bg-brand-500,
+.bg-brand-600,
+.bg-emerald-500,
+.bg-emerald-600,
+.bg-teal-500,
+.bg-teal-600,
+.bg-cyan-600,
+.bg-sky-500,
+.bg-sky-600,
+.bg-blue-600,
+.bg-indigo-600,
+.bg-violet-600,
+.bg-purple-500,
+.bg-purple-600,
+.bg-rose-500,
+.bg-rose-600,
+.bg-amber-500,
+.bg-amber-600,
+.bg-orange-500,
+.bg-orange-600,
+.bg-green-600 {
+  color: #ffffff !important;
+}
+
+/* Colored GRADIENT buttons (login, quick order, save order, export) keep
+   white text in every theme too. */
+.bg-gradient-to-r.from-brand-600,
+.bg-gradient-to-r.from-emerald-600,
+.bg-gradient-to-br.from-brand-600,
+.bg-gradient-to-br.from-emerald-600,
+.bg-gradient-to-r.from-brand-500,
+.bg-gradient-to-r.from-emerald-500 {
+  color: #ffffff !important;
+}
+
+
+/* =============================================================================
+   3. BRAND PALETTE REMAP — every brand-* utility reads --brand-* vars
+   ============================================================================= */
+.bg-brand-500 { background-color: var(--brand-500) !important; }
+.bg-brand-600 { background-color: var(--brand-600) !important; }
+.bg-brand-700 { background-color: var(--brand-700) !important; }
+.bg-brand-500\/10 { background-color: color-mix(in srgb, var(--brand-500) 10%, transparent) !important; }
+.bg-brand-500\/20 { background-color: color-mix(in srgb, var(--brand-500) 20%, transparent) !important; }
+.bg-brand-500\/30 { background-color: color-mix(in srgb, var(--brand-500) 30%, transparent) !important; }
+.bg-brand-600\/20 { background-color: color-mix(in srgb, var(--brand-600) 20%, transparent) !important; }
+.bg-brand-600\/30 { background-color: color-mix(in srgb, var(--brand-600) 30%, transparent) !important; }
+.bg-brand-600\/40 { background-color: color-mix(in srgb, var(--brand-600) 40%, transparent) !important; }
+.text-brand-300 { color: var(--brand-300) !important; }
+.text-brand-400 { color: var(--brand-400) !important; }
+.border-brand-500\/20 { border-color: color-mix(in srgb, var(--brand-500) 20%, transparent) !important; }
+.border-brand-500\/30 { border-color: color-mix(in srgb, var(--brand-500) 30%, transparent) !important; }
+.border-brand-500\/40 { border-color: color-mix(in srgb, var(--brand-500) 40%, transparent) !important; }
+.border-brand-600\/30 { border-color: color-mix(in srgb, var(--brand-600) 30%, transparent) !important; }
+.focus\:border-brand-500:focus { border-color: var(--brand-500) !important; }
+.focus\:ring-brand-500:focus { --tw-ring-color: var(--brand-500) !important; }
+.hover\:bg-brand-500:hover { background-color: var(--brand-500) !important; }
+.hover\:bg-brand-600:hover { background-color: var(--brand-600) !important; }
+.hover\:bg-brand-600\/40:hover { background-color: color-mix(in srgb, var(--brand-600) 40%, transparent) !important; }
+.hover\:bg-brand-600\/50:hover { background-color: color-mix(in srgb, var(--brand-600) 50%, transparent) !important; }
+.hover\:text-brand-300:hover { color: var(--brand-300) !important; }
+.hover\:text-brand-400:hover { color: var(--brand-400) !important; }
+.from-brand-500 { --tw-gradient-from: var(--brand-500) !important; }
+.from-brand-600 { --tw-gradient-from: var(--brand-600) !important; }
+.from-brand-900\/40 { --tw-gradient-from: color-mix(in srgb, var(--brand-900) 40%, transparent) !important; }
+.to-brand-400 { --tw-gradient-to: var(--brand-400) !important; }
+.to-brand-500 { --tw-gradient-to: var(--brand-500) !important; }
+.to-brand-600 { --tw-gradient-to: var(--brand-600) !important; }
+.shadow-brand-500\/10 { --tw-shadow-color: color-mix(in srgb, var(--brand-500) 10%, transparent) !important; }
+.shadow-brand-500\/20 { --tw-shadow-color: color-mix(in srgb, var(--brand-500) 20%, transparent) !important; }
+.shadow-brand-500\/50 { --tw-shadow-color: color-mix(in srgb, var(--brand-500) 50%, transparent) !important; }
+.shadow-brand-600\/20 { --tw-shadow-color: color-mix(in srgb, var(--brand-600) 20%, transparent) !important; }
+.shadow-brand-600\/30 { --tw-shadow-color: color-mix(in srgb, var(--brand-600) 30%, transparent) !important; }
+.bg-accent-500\/20 { background-color: rgba(245, 158, 11, 0.2) !important; }
+
+/* Light theme: hero gradient cards become airy tints (white-text keeper only
+   applies to solid/colored-gradient buttons above). */
+[data-theme="light"] .from-emerald-950\/60 { --tw-gradient-from: rgba(16, 185, 129, 0.12) !important; }
+[data-theme="light"] .from-emerald-950\/40 { --tw-gradient-from: rgba(16, 185, 129, 0.10) !important; }
+[data-theme="light"] .from-brand-900\/40 { --tw-gradient-from: rgba(2, 132, 199, 0.10) !important; }
+
+/* Light theme: tinted info strips (translucent -950 surfaces) become pastel. */
+[data-theme="light"] .bg-sky-950\/30 { background-color: rgba(14, 165, 233, 0.10) !important; }
+[data-theme="light"] .bg-sky-950\/25 { background-color: rgba(14, 165, 233, 0.08) !important; }
+[data-theme="light"] .bg-sky-950\/40 { background-color: rgba(14, 165, 233, 0.12) !important; }
+[data-theme="light"] .bg-amber-950\/30 { background-color: rgba(245, 158, 11, 0.10) !important; }
+[data-theme="light"] .bg-amber-950\/25 { background-color: rgba(245, 158, 11, 0.08) !important; }
+[data-theme="light"] .bg-amber-950\/20 { background-color: rgba(245, 158, 11, 0.07) !important; }
+[data-theme="light"] .bg-purple-950\/30 { background-color: rgba(168, 85, 247, 0.10) !important; }
+[data-theme="light"] .bg-purple-950\/40 { background-color: rgba(168, 85, 247, 0.10) !important; }
+[data-theme="light"] .bg-rose-950\/30 { background-color: rgba(244, 63, 94, 0.08) !important; }
+[data-theme="light"] .bg-rose-950\/20 { background-color: rgba(244, 63, 94, 0.08) !important; }
+[data-theme="light"] .bg-orange-950\/30 { background-color: rgba(249, 115, 22, 0.10) !important; }
+[data-theme="light"] .bg-teal-950\/30 { background-color: rgba(20, 184, 166, 0.10) !important; }
+[data-theme="light"] .bg-emerald-950\/60 { background-color: rgba(16, 185, 129, 0.12) !important; }
+[data-theme="light"] .hover\:bg-rose-950\/40:hover { background-color: rgba(244, 63, 94, 0.10) !important; }
+[data-theme="light"] .hover\:bg-rose-950\/50:hover { background-color: rgba(244, 63, 94, 0.12) !important; }
+[data-theme="light"] .hover\:bg-amber-950\/40:hover { background-color: rgba(245, 158, 11, 0.10) !important; }
+
+/* Light theme: semantic -300/-400 text flips to readable deep shades on light
+   tints (chips, strips, values). -200 stays light for dark toast/solid fills. */
+[data-theme="light"] .text-emerald-300 { color: #047857 !important; }
+[data-theme="light"] .text-emerald-400 { color: #059669 !important; }
+[data-theme="light"] .text-rose-300 { color: #be123c !important; }
+[data-theme="light"] .text-rose-400 { color: #e11d48 !important; }
+[data-theme="light"] .text-amber-300 { color: #b45309 !important; }
+[data-theme="light"] .text-amber-400 { color: #d97706 !important; }
+[data-theme="light"] .text-sky-300 { color: #0369a1 !important; }
+[data-theme="light"] .text-sky-400 { color: #0284c7 !important; }
+[data-theme="light"] .text-purple-300 { color: #6d28d9 !important; }
+[data-theme="light"] .text-purple-400 { color: #9333ea !important; }
+[data-theme="light"] .text-orange-300 { color: #c2410c !important; }
+[data-theme="light"] .text-orange-400 { color: #ea580c !important; }
+[data-theme="light"] .text-teal-300 { color: #0f766e !important; }
+[data-theme="light"] .text-teal-400 { color: #0d9488 !important; }
+[data-theme="light"] .text-blue-300 { color: #1d4ed8 !important; }
+[data-theme="light"] .text-blue-400 { color: #2563eb !important; }
+[data-theme="light"] .text-violet-300 { color: #6d28d9 !important; }
+[data-theme="light"] .text-indigo-300 { color: #4338ca !important; }
+[data-theme="light"] .text-green-300 { color: #047857 !important; }
+[data-theme="light"] .text-cyan-300 { color: #0e7490 !important; }
+
+
+/* =============================================================================
+   4. SCROLLBARS
+   ============================================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--t-scroll-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--t-scroll-thumb);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--t-scroll-thumb-hover);
+}
+
+
+/* =============================================================================
+   5. BASE + AMBIENT BACKGROUNDS
+   ============================================================================= */
+html {
+  scroll-behavior: smooth;
+  background: var(--ambient-bg);
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--brand-500) 10%, transparent), transparent 24%),
+    radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.07), transparent 20%),
+    linear-gradient(180deg, var(--t-950) 0%, var(--t-900) 52%, var(--t-950) 100%);
+  color: var(--ui-text);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  opacity: 0.5;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.025), transparent 36%),
+    linear-gradient(300deg, rgba(255, 255, 255, 0.02), transparent 30%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.92), transparent 130%);
+}
+
+body::after {
+  opacity: 0.25;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px);
+  background-size: 120px 120px;
+  mix-blend-mode: screen;
+}
+
+[data-theme="light"] body::before { opacity: 0.3; }
+[data-theme="light"] body::after { opacity: 0.14; }
+
+#app {
+  position: relative;
+  z-index: 0;
+}
+
+#main-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+}
+
+/* V3.18 — permanent anti-horizontal-scroll guards */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+#main-header {
+  min-width: 0;
+}
+
+::selection {
+  background-color: var(--brand-500);
+  color: #ffffff;
+}
+
+/* Numeric font formatting */
+.num-font {
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+
+/* =============================================================================
+   6. ANIMATIONS
+   ============================================================================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal-animate {
+  animation: modalBackdropIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalCardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lowStockPulse {
+  0%, 100% { background-color: rgba(239, 68, 68, 0.10); border-color: rgba(239, 68, 68, 0.3); }
+  50%      { background-color: rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.6); }
+}
+
+.low-stock-row {
+  animation: lowStockPulse 3s infinite ease-in-out;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+/* =============================================================================
+   7. FLOATING GLASS HEADER + NAVIGATION
+   ============================================================================= */
+#main-header {
+  margin: 0.75rem 0.75rem 0;
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 76%, transparent);
+  background: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  box-shadow: var(--shadow-medium);
+}
+
+#main-header > div:first-child {
+  min-width: 0;
+}
+
+#main-header nav {
+  border-color: color-mix(in srgb, var(--ui-border) 60%, transparent);
+  background: color-mix(in srgb, var(--t-800) 55%, transparent);
+}
+
+/* Nav button underline flourish */
+button[data-nav].nav-btn,
+button[data-nav].mobile-nav-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+button[data-nav].nav-btn::after,
+button[data-nav].mobile-nav-btn::after {
+  content: "";
+  position: absolute;
+  inset: auto 12% 0.35rem 12%;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent, var(--brand-400), transparent);
+  opacity: 0;
+  transform: scaleX(0.5);
+  transform-origin: center;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+button[data-nav].nav-btn:hover::after,
+button[data-nav].mobile-nav-btn:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* Brand / nav interactions */
+#main-header a[data-nav="dashboard"],
+button[data-nav],
+#btn-quick-new-order,
+#sync-menu-btn,
+#user-menu-btn,
+#btn-mobile-menu-toggle,
+#btn-close-mobile-drawer,
+#btn-login-submit,
+#btn-forgot-password,
+#btn-manual-sync,
+#btn-open-sheet,
+#btn-open-cloud-settings,
+#btn-change-password,
+#btn-logout,
+#mobile-btn-logout {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+button[data-nav]:hover,
+#btn-quick-new-order:hover,
+#sync-menu-btn:hover,
+#user-menu-btn:hover,
+#btn-mobile-menu-toggle:hover,
+#btn-close-mobile-drawer:hover,
+#btn-login-submit:hover,
+#btn-manual-sync:hover,
+#btn-open-sheet:hover,
+#btn-open-cloud-settings:hover,
+#btn-change-password:hover,
+#btn-logout:hover,
+#mobile-btn-logout:hover {
+  transform: translateY(-1px);
+}
+
+/* Brand logo hover */
+#login-brand-logo,
+#header-brand-logo,
+#mobile-brand-logo {
+  transition: transform 220ms ease, filter 220ms ease;
+}
+#login-brand-logo:hover,
+#header-brand-logo:hover,
+#mobile-brand-logo:hover {
+  transform: scale(1.03);
+  filter: brightness(1.05) saturate(1.05);
+}
+
+/* V3.19 — navbar layout/spacing polish (functional, kept) */
+#main-header #btn-quick-new-order,
+#main-header #sync-menu-btn,
+#main-header #user-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+#main-header nav button.nav-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+}
+
+@media (min-width: 1280px) {
+  #main-header nav button.nav-btn {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  #main-header {
+    gap: 0.75rem;
+  }
+  #main-header nav {
+    min-height: 2.75rem;
+    overflow-y: hidden;
+  }
+}
+
+#main-header > .flex.items-center.gap-2.sm\:gap-3.shrink-0 > div.w-px {
+  background: color-mix(in srgb, var(--t-600) 70%, transparent);
+}
+
+
+/* =============================================================================
+   8. CARDS / PANELS / SURFACES
+   ============================================================================= */
+.card,
+.panel,
+.surface,
+.glass-card,
+.section-card,
+.view-card,
+.stat-card,
+.kpi-card,
+.report-card,
+.dashboard-card,
+.app-section,
+.page-section,
+.subsection,
+.compact-card,
+.toolbar,
+.toolbar-card,
+.filter-bar,
+.search-bar,
+.summary-strip,
+.empty-state,
+.confirm-card,
+.profile-card {
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 72%, transparent);
+  background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
+  box-shadow: var(--shadow-soft);
+}
+
+.card,
+.panel,
+.surface,
+.glass-card,
+.section-card,
+.view-card,
+.stat-card,
+.kpi-card,
+.report-card,
+.dashboard-card {
+  position: relative;
+  overflow: clip;
+}
+
+.card::before,
+.panel::before,
+.surface::before,
+.glass-card::before,
+.section-card::before,
+.view-card::before,
+.stat-card::before,
+.kpi-card::before,
+.report-card::before,
+.dashboard-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--inset-top), transparent 28%, transparent 72%, color-mix(in srgb, var(--inset-top) 60%, transparent));
+  opacity: 0.8;
+}
+
+/* Dashboard KPI cards (`.group` rows in grids) lift on hover */
+#main-content .grid > .group {
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+#main-content .grid > .group:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Dashboard / reports KPI value typography */
+#main-content .grid > .group .text-lg,
+#main-content .grid > .group .text-2xl {
+  letter-spacing: -0.02em;
+}
+
+/* Shipping / pending / supplier strips keep their semantic tint borders */
+.border-emerald-500\/40 { border-color: rgba(16, 185, 129, 0.40) !important; }
+.border-emerald-500\/30 { border-color: rgba(16, 185, 129, 0.30) !important; }
+.border-sky-800\/40 { border-color: rgba(3, 105, 161, 0.40) !important; }
+.border-sky-800\/30 { border-color: rgba(3, 105, 161, 0.30) !important; }
+.border-amber-800\/40 { border-color: rgba(146, 64, 14, 0.40) !important; }
+.border-amber-800\/30 { border-color: rgba(146, 64, 14, 0.30) !important; }
+.border-purple-800\/40 { border-color: rgba(107, 33, 168, 0.40) !important; }
+.border-purple-800\/30 { border-color: rgba(107, 33, 168, 0.30) !important; }
+.border-rose-800\/40 { border-color: rgba(159, 18, 57, 0.40) !important; }
+.border-rose-900\/60 { border-color: rgba(136, 19, 55, 0.60) !important; }
+.border-orange-800\/40 { border-color: rgba(154, 52, 18, 0.40) !important; }
+.border-orange-800\/30 { border-color: rgba(154, 52, 18, 0.30) !important; }
+.border-teal-800\/40 { border-color: rgba(17, 94, 89, 0.40) !important; }
+.border-teal-800\/30 { border-color: rgba(17, 94, 89, 0.30) !important; }
+
+/* KPI icon tiles keep their colored tint border recipe consistent */
+.bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.10) !important; }
+.bg-emerald-500\/20 { background-color: rgba(16, 185, 129, 0.20) !important; }
+.bg-emerald-500\/30 { background-color: rgba(16, 185, 129, 0.30) !important; }
+.bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.10) !important; }
+.bg-amber-500\/20 { background-color: rgba(245, 158, 11, 0.20) !important; }
+.bg-amber-500\/30 { background-color: rgba(245, 158, 11, 0.30) !important; }
+.bg-rose-500\/10 { background-color: rgba(244, 63, 94, 0.10) !important; }
+.bg-rose-500\/20 { background-color: rgba(244, 63, 94, 0.20) !important; }
+.bg-rose-500\/30 { background-color: rgba(244, 63, 94, 0.30) !important; }
+.bg-sky-500\/10 { background-color: rgba(14, 165, 233, 0.10) !important; }
+.bg-sky-500\/20 { background-color: rgba(14, 165, 233, 0.20) !important; }
+.bg-sky-500\/30 { background-color: rgba(14, 165, 233, 0.30) !important; }
+.bg-purple-500\/10 { background-color: rgba(168, 85, 247, 0.10) !important; }
+.bg-purple-500\/20 { background-color: rgba(168, 85, 247, 0.20) !important; }
+.bg-teal-500\/10 { background-color: rgba(20, 184, 166, 0.10) !important; }
+.bg-orange-500\/10 { background-color: rgba(249, 115, 22, 0.10) !important; }
+.bg-orange-500\/20 { background-color: rgba(249, 115, 22, 0.20) !important; }
+.bg-orange-600\/20 { background-color: rgba(234, 88, 12, 0.20) !important; }
+.bg-orange-600\/40 { background-color: rgba(234, 88, 12, 0.40) !important; }
+.hover\:bg-orange-600\/40:hover { background-color: rgba(234, 88, 12, 0.40) !important; }
+.bg-blue-900\/40 { background-color: rgba(30, 58, 138, 0.40) !important; }
+.border-blue-500\/30 { border-color: rgba(59, 130, 246, 0.30) !important; }
+
+
+/* =============================================================================
+   9. LOGIN SCREEN
+   ============================================================================= */
+#login-screen {
+  background:
+    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--brand-500) 14%, transparent), transparent 25%),
+    radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.10), transparent 22%),
+    var(--t-950);
+}
+
+#login-screen > div {
+  border-radius: var(--radius-3xl);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 62%, transparent);
+  background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  animation: modalCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+
+/* =============================================================================
+   10. FORM CONTROLS
+   ============================================================================= */
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+select,
+textarea {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid color-mix(in srgb, var(--ui-border) 100%, transparent) !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--t-800) 92%, transparent), color-mix(in srgb, var(--t-800) 70%, transparent)) !important;
+  color: var(--ui-text) !important;
+  box-shadow: inset 0 1px 0 var(--inset-top);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+select:focus,
+textarea:focus {
+  box-shadow: var(--focus-ring), inset 0 1px 0 var(--inset-top) !important;
+  transform: translateY(-1px);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--ui-dim) 88%, transparent) !important;
+}
+
+select option {
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+
+/* =============================================================================
+   11. BUTTONS + FOCUS STATES
+   ============================================================================= */
+button {
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+button[disabled],
+button.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Row action buttons (tinted outline buttons) get a uniform refined shape */
+button.btn-edit-user,
+button.btn-edit-customer,
+button.btn-edit-supplier,
+button.btn-edit-product,
+button.btn-pay-customer,
+button.btn-pay-supplier,
+button.btn-customer-statement,
+button.btn-supplier-statement,
+button.btn-view-order-details,
+button.btn-change-order-status,
+button.btn-add-shipment,
+button.btn-delete-product,
+button.btn-delete-expense,
+button.btn-delete-user,
+button.btn-supplier-return {
+  transition: transform 160ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+button.btn-edit-user:hover,
+button.btn-edit-customer:hover,
+button.btn-edit-supplier:hover,
+button.btn-edit-product:hover,
+button.btn-pay-customer:hover,
+button.btn-pay-supplier:hover,
+button.btn-customer-statement:hover,
+button.btn-supplier-statement:hover,
+button.btn-view-order-details:hover,
+button.btn-change-order-status:hover,
+button.btn-add-shipment:hover,
+button.btn-delete-product:hover,
+button.btn-delete-expense:hover,
+button.btn-delete-user:hover,
+button.btn-supplier-return:hover {
+  transform: translateY(-1px);
+}
+
+/* Report tab buttons */
+.report-tab-btn {
+  transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 160ms ease;
+}
+.report-tab-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+
+/* =============================================================================
+   12. TABLES
+   ============================================================================= */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 74%, transparent);
+  background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
+  box-shadow: var(--shadow-soft);
+}
+
+.data-table th {
+  background-color: color-mix(in srgb, var(--t-800) 78%, transparent);
+  color: var(--t-text-400);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--t-600) 60%, transparent);
+}
+
+.data-table th:first-child {
+  border-top-right-radius: 1rem;
+}
+.data-table th:last-child {
+  border-top-left-radius: 1rem;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--t-600) 40%, transparent);
+  font-size: 0.875rem;
+  color: var(--t-text-200);
+}
+
+.data-table tbody tr {
+  transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+.data-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--t-800) 55%, transparent);
+  transform: translateY(-1px);
+}
+
+
+/* =============================================================================
+   13. MODALS
+   ============================================================================= */
+#modal-container > * {
+  border-radius: var(--radius-2xl);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 72%, transparent);
+  background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+}
+
+#modal-container > div > div:first-child {
+  border-bottom-color: color-mix(in srgb, var(--ui-border) 70%, transparent);
+  background: color-mix(in srgb, var(--t-900) 92%, transparent);
+}
+
+#modal-container .w-10.h-10.rounded-xl.bg-brand-500\/10 {
+  background-color: color-mix(in srgb, var(--brand-500) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--brand-500) 22%, transparent) !important;
+  color: var(--brand-400) !important;
+}
+
+
+/* =============================================================================
+   14. TOASTS
+   ============================================================================= */
+#toast-container {
+  gap: 0.75rem;
+}
+
+#toast-container > * {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  border-left-width: 3px;
+}
+
+/* Left accent bar color per toast type (dark backgrounds, all themes) */
+#toast-container > .border-emerald-800\/80 { border-left-color: #34d399; }
+#toast-container > .border-rose-800\/80 { border-left-color: #fb7185; }
+#toast-container > .border-amber-800\/80 { border-left-color: #fbbf24; }
+#toast-container > .border-sky-800\/80 { border-left-color: #38bdf8; }
+
+.toast-close-btn {
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.toast-close-btn:hover {
+  transform: scale(1.08);
+}
+
+
+/* =============================================================================
+   15. DROPDOWNS / POPOVERS
+   ============================================================================= */
+#sync-menu-dropdown,
+#user-dropdown-menu {
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 72%, transparent);
+  background: linear-gradient(180deg, var(--surface-glass-strong), var(--surface-glass));
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  animation: modalCardIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* V3.18 — pin dropdowns so RTL never flips their anchor side */
+#sync-menu-dropdown,
+#user-dropdown-menu {
+  right: auto;
+  left: 0;
+}
+#sync-menu-dropdown {
+  max-width: calc(100vw - 1.25rem);
+}
+
+#sync-menu-dropdown button,
+#user-dropdown-menu button {
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+
+/* =============================================================================
+   16. BADGES / CHIPS / STATUS
+   ============================================================================= */
+.badge,
+.chip,
+.pill,
+.status-chip,
+.metric-chip {
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--ui-border) 68%, transparent);
+  background: color-mix(in srgb, var(--brand-500) 12%, color-mix(in srgb, var(--t-900) 58%, transparent));
+  color: var(--ui-text);
+  box-shadow: inset 0 1px 0 var(--inset-top);
+}
+
+.empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--ui-dim);
+}
+
+
+/* =============================================================================
+   17. FOOTER
+   ============================================================================= */
+footer {
+  margin-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--ui-border) 72%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--t-950) 60%, transparent), color-mix(in srgb, var(--t-950) 88%, transparent));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+
+/* =============================================================================
+   18. UTILITIES & LEGACY HELPERS (functional, kept)
+   ============================================================================= */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+
+/* =============================================================================
+   19. RESPONSIVE
+   ============================================================================= */
+@media (max-width: 1024px) {
+  #main-header {
+    margin: 0.5rem 0.5rem 0;
+    border-radius: var(--radius-xl);
+  }
+  #main-content {
+    padding-top: 0.75rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  #main-header {
+    padding-inline: 0.85rem;
+    padding-block: 0.7rem;
+  }
+  #main-content {
+    padding-inline: 0.85rem;
+    padding-bottom: 1.25rem;
+  }
+  #login-screen {
+    padding: 1rem;
+  }
+  #login-screen > div {
+    width: 100%;
+    max-width: 28rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-xl);
+  }
+  #mobile-drawer {
+    padding: 1rem;
+  }
+  .data-table {
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    background-attachment: fixed;
+  }
+  #main-header,
+  #login-screen > div,
+  #mobile-drawer,
+  #modal-container > * {
+    border-radius: var(--radius-md);
+  }
+  #main-content {
+    gap: 0.85rem;
+  }
+}
